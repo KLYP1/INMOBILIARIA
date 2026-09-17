@@ -1,26 +1,108 @@
 @import "tailwindcss";
 
+/* Tokens crudos. El modo oscuro se agrega redefiniendo este bloque, sin tocar componentes. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --crema: #f4f1e8;
+  --superficie: #faf7ef;
+  --elevado: #fffdf8;
+  --tinta: #1c1c1a;
+  --ambar: #f0b429;
+
+  --texto: #1c1c1a;
+  --texto-suave: #6e6a5e;
+  --texto-tenue: #a39e90;
+  --borde: #e8e3d6;
+
+  --exito: #0f6e56;
+  --exito-fondo: #e1f5ee;
+  --aviso: #854f0b;
+  --aviso-fondo: #faeeda;
+  --peligro: #a32d2d;
+  --peligro-fondo: #fcebeb;
+
+  /* Sobre fondo tinta */
+  --tinta-texto: #f4f1e8;
+  --tinta-tenue: #7a776d;
+  --tinta-borde: #34342f;
+  --tinta-punto: #3a3a35;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-crema: var(--crema);
+  --color-superficie: var(--superficie);
+  --color-elevado: var(--elevado);
+  --color-tinta: var(--tinta);
+  --color-ambar: var(--ambar);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-texto: var(--texto);
+  --color-suave: var(--texto-suave);
+  --color-tenue: var(--texto-tenue);
+  --color-borde: var(--borde);
+
+  --color-exito: var(--exito);
+  --color-exito-fondo: var(--exito-fondo);
+  --color-aviso: var(--aviso);
+  --color-aviso-fondo: var(--aviso-fondo);
+  --color-peligro: var(--peligro);
+  --color-peligro-fondo: var(--peligro-fondo);
+
+  --color-tinta-texto: var(--tinta-texto);
+  --color-tinta-tenue: var(--tinta-tenue);
+  --color-tinta-borde: var(--tinta-borde);
+  --color-tinta-punto: var(--tinta-punto);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --radius-tarjeta: 16px;
+  --radius-control: 10px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--crema);
+  color: var(--texto);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dos pesos, nunca mas. */
+strong,
+b,
+th {
+  font-weight: 500;
+}
+
+::selection {
+  background: var(--ambar);
+  color: var(--tinta);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ambar);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Scrollbars discretas dentro de tarjetas */
+.scroll-fino {
+  scrollbar-width: thin;
+  scrollbar-color: var(--borde) transparent;
+}
+
+@keyframes deslizar {
+  from {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }

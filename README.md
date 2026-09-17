@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KLYP Inmobiliario
 
-## Getting Started
+Panel de demostración de un asistente de WhatsApp para desarrolladoras
+inmobiliarias de Lima. Muestra qué pasa cuando un bot atiende, califica y
+agenda los leads que hoy se pierden por no contestar a tiempo.
 
-First, run the development server:
+Es una **demostración de piloto**: no hay servidor ni base de datos. Los sesenta
+leads, los cinco proyectos y las doce visitas viven en el código, y lo que se
+cambia durante la sesión se pierde al recargar. Eso es deliberado.
+
+## Pantallas
+
+| Ruta | Qué muestra |
+|---|---|
+| `/inicio` | Portada con las cifras del mes, la banda de leads sin atender y el informe semanal |
+| `/conversaciones` | Bandeja para leer los chats y entrar a responder tú, pausando al asistente |
+| `/leads` | Los sesenta leads con su calificación, filtros y ficha completa |
+| `/proyectos` | Stock por tipología y qué leads mira cada proyecto |
+| `/agenda` | Rejilla semanal, cola del día y ficha de visita con briefing previo |
+| `/asistente` | Configuración del bot: preguntas, reglas, reactivación y canales |
+
+## Cómo correrlo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Verificación antes de publicar:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npx eslint app components features lib
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Cómo está armado
 
-## Learn More
+- **Next.js 16** (App Router, Turbopack), React 19, Tailwind v4, Recharts, lucide.
+- `lib/` guarda los datos de demostración y todo lo que se deriva de ellos.
+  Ningún número de la interfaz está escrito a mano: los 42 segundos de respuesta,
+  los 19 calificados en espera y los S/ 8.6 millones en juego salen de
+  `lib/metricas.ts`.
+- `lib/vistas.ts` arma los modelos de vista. **Las etiquetas de tiempo relativo
+  se resuelven en el servidor y viajan escritas**; un componente de cliente que
+  las calcule rompe la hidratación.
+- `app/(panel)/layout.tsx` va en `force-dynamic` para que las fechas sigan
+  siendo relativas a hoy y no queden congeladas en el momento del build.
+- `features/estado/proveedor-demo.tsx` guarda en memoria todo lo que el usuario
+  toca durante la demostración, para que la bandeja y la ficha del lead vean lo
+  mismo.
 
-To learn more about Next.js, take a look at the following resources:
+Las decisiones de producto y de arquitectura están en
+[`docs/decisiones.md`](docs/decisiones.md).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Lo que no hace
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+No hay conexión real con WhatsApp, Instagram ni Messenger: los canales se
+representan, no se conectan. Conectarlos de verdad exige servidor propio con
+webhooks públicos, verificación de empresa con Meta y cada plantilla aprobada,
+y se presupuesta aparte.
