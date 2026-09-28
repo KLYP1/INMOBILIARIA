@@ -1,8 +1,8 @@
 /**
  * Lima no tiene horario de verano, asi que un desplazamiento fijo de -5 h
  * basta para leer y escribir fechas de forma identica en el servidor y en el
- * navegador. Todo se deriva de dos anclas de modulo (HOY y AHORA), nunca de
- * `new Date()` suelto, para que la hidratacion no discrepe.
+ * navegador. Todo se deriva de hoy() y ahora(), nunca de `new Date()` suelto,
+ * para que la hidratacion no discrepe.
  */
 const OFFSET_LIMA = -5 * 60 * 60 * 1000;
 
@@ -14,20 +14,26 @@ function aLima(ms: number): Date {
   return new Date(ms + OFFSET_LIMA);
 }
 
-const reloj = new Date();
-const relojLima = aLima(reloj.getTime());
+/**
+ * Medianoche de hoy en Lima, en milisegundos UTC.
+ *
+ * Es funcion y no constante de modulo a proposito, y la diferencia importa: el
+ * trabajador de WhatsApp esta pensado para correr dias seguidos, y una
+ * constante congelaria "hoy" en el instante del arranque. Un servidor
+ * levantado el lunes seguiria creyendo que es lunes el jueves, y la agenda del
+ * dia saldria vacia sin que nada falle a la vista.
+ */
+export function hoy(): number {
+  const l = aLima(Date.now());
+  return (
+    Date.UTC(l.getUTCFullYear(), l.getUTCMonth(), l.getUTCDate()) - OFFSET_LIMA
+  );
+}
 
-/** Medianoche de hoy en Lima, en milisegundos UTC. */
-export const HOY =
-  Date.UTC(
-    relojLima.getUTCFullYear(),
-    relojLima.getUTCMonth(),
-    relojLima.getUTCDate(),
-  ) - OFFSET_LIMA;
-
-/** Ahora truncado al minuto. Los datos de demostracion se generan como
- *  desplazamientos de esta ancla, de modo que "hace 20 min" siempre dice 20. */
-export const AHORA = Math.floor(reloj.getTime() / MS_MIN) * MS_MIN;
+/** Ahora truncado al minuto, para que "hace 20 min" no baile entre segundos. */
+export function ahora(): number {
+  return Math.floor(Date.now() / MS_MIN) * MS_MIN;
+}
 
 export const MESES = [
   "enero",
@@ -94,12 +100,12 @@ export function partes(iso: string): Partes {
 
 /** Construye un ISO a partir de un desplazamiento en dias sobre hoy. */
 export function desdeHoy(dias: number, hora = 0, minuto = 0): string {
-  return new Date(HOY + dias * MS_DIA + hora * MS_HORA + minuto * MS_MIN).toISOString();
+  return new Date(hoy() + dias * MS_DIA + hora * MS_HORA + minuto * MS_MIN).toISOString();
 }
 
 /** Construye un ISO a partir de un desplazamiento en minutos sobre ahora. */
 export function haceMinutos(minutos: number): string {
-  return new Date(AHORA - minutos * MS_MIN).toISOString();
+  return new Date(ahora() - minutos * MS_MIN).toISOString();
 }
 
 function dosDigitos(n: number): string {
@@ -131,12 +137,12 @@ export function claveDia(iso: string): string {
 }
 
 export function esHoy(iso: string): boolean {
-  return claveDia(iso) === claveDia(new Date(HOY).toISOString());
+  return claveDia(iso) === claveDia(new Date(hoy()).toISOString());
 }
 
 /** "hace 20 min", "hace 3 h", "ayer", "hace 4 d" */
 export function relativo(iso: string): string {
-  const diff = AHORA - new Date(iso).getTime();
+  const diff = ahora() - new Date(iso).getTime();
   if (diff < MS_MIN) return "recién";
   if (diff < MS_HORA) return `hace ${Math.floor(diff / MS_MIN)} min`;
   if (diff < MS_DIA) return `hace ${Math.floor(diff / MS_HORA)} h`;

@@ -11,11 +11,11 @@ import { InformeSemanal } from "@/features/informe/informe-semanal";
 import { EMPRESA } from "@/lib/data/empresa";
 import { obtenerDatos } from "@/lib/base/datos";
 import { distritosPedidos, informeSemanal, leadsPorSemana } from "@/lib/metricas";
-import { HOY, fechaLarga } from "@/lib/fechas";
+import { fechaLarga, hoy } from "@/lib/fechas";
 
 export default async function Inicio() {
   const datos = await obtenerDatos();
-  const hoy = fechaLarga(new Date(HOY).toISOString());
+  const fechaDeHoy = fechaLarga(new Date(hoy()).toISOString());
   const dona = distritosPedidos(datos);
   const recientes = datos.leads.slice(0, 12).map((l) => ({
     id: l.id,
@@ -34,7 +34,7 @@ export default async function Inicio() {
         <h1 className="text-[27px] leading-tight font-normal">
           Hola, {EMPRESA.usuaria.saludo}
         </h1>
-        <p className="mt-1.5 text-[13px] text-tenue">{hoy}</p>
+        <p className="mt-1.5 text-[13px] text-tenue">{fechaDeHoy}</p>
       </div>
 
       <ResumenSuperior />

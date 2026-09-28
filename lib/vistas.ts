@@ -1,6 +1,6 @@
 import { semaforo, type Semaforo } from "./scoring";
 import { recomendarPorCercania, sinOfertaEnZona } from "./recomendacion";
-import { relativo, AHORA } from "./fechas";
+import { ahora, relativo } from "./fechas";
 import { briefingVisita } from "./briefing";
 import type { Datos } from "./base/datos";
 import type { Lead, Visita } from "./types";
@@ -83,14 +83,17 @@ export type VisitaVista = Visita & {
 };
 
 export function visitasVista(datos: Datos): VisitaVista[] {
+  // Un solo instante para toda la lista: si cada visita leyera el reloj por su
+  // cuenta, dos podrian quedar marcadas como "la proxima".
+  const momento = ahora();
   const proximaId = datos.visitas.find(
-    (v) => new Date(v.fechaHora).getTime() >= AHORA,
+    (v) => new Date(v.fechaHora).getTime() >= momento,
   )?.id;
 
   return datos.visitas.map((visita) => {
     const lead = datos.leads.find((l) => l.id === visita.leadId) ?? null;
     const proyecto = datos.proyectos.find((p) => p.id === visita.proyectoId);
-    const pasada = new Date(visita.fechaHora).getTime() < AHORA;
+    const pasada = new Date(visita.fechaHora).getTime() < momento;
 
     return {
       ...visita,

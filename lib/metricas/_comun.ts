@@ -1,4 +1,4 @@
-import { HOY, MS, partes } from "../fechas";
+import { MS, hoy, partes } from "../fechas";
 import { porcentaje } from "../formato";
 import type { Datos } from "../base/datos";
 
@@ -8,15 +8,20 @@ import type { Datos } from "../base/datos";
  * que se le da, y se puede probar sin base ni servidor.
  */
 
-const HOY_PARTES = partes(new Date(HOY).toISOString());
+// Se resuelve por llamada, no al importar: un proceso que vive dias
+// congelaria el mes y "leads del mes" se quedaria en el mes del arranque.
+function partesDeHoy() {
+  return partes(new Date(hoy()).toISOString());
+}
 
 export function esDelMesActual(iso: string): boolean {
   const p = partes(iso);
-  return p.mes === HOY_PARTES.mes && p.anio === HOY_PARTES.anio;
+  const h = partesDeHoy();
+  return p.mes === h.mes && p.anio === h.anio;
 }
 
 export function diasAtras(iso: string): number {
-  return Math.ceil((HOY - new Date(iso).getTime()) / MS.DIA);
+  return Math.ceil((hoy() - new Date(iso).getTime()) / MS.DIA);
 }
 
 export type Distrito = { nombre: string; leads: number; porcentaje: number };

@@ -3,14 +3,14 @@ import { ArrowRight } from "lucide-react";
 import { Tarjeta, TituloTarjeta } from "@/components/ui/tarjeta";
 import { Pildora } from "@/components/ui/pildora";
 import { visitasDeHoy } from "@/lib/metricas";
-import { AHORA, hora } from "@/lib/fechas";
+import { ahora, hora } from "@/lib/fechas";
 import { obtenerDatos } from "@/lib/base/datos";
 
 export async function VisitasHoy() {
   const datos = await obtenerDatos();
   const visitas = visitasDeHoy(datos);
   const proxima =
-    visitas.find((v) => new Date(v.fechaHora).getTime() >= AHORA) ?? visitas[0];
+    visitas.find((v) => new Date(v.fechaHora).getTime() >= ahora()) ?? visitas[0];
 
   return (
     <Tarjeta className="flex flex-col p-5">
