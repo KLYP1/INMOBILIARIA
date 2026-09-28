@@ -2,14 +2,15 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Tarjeta, TituloTarjeta } from "@/components/ui/tarjeta";
 import { demandaNoAtendida, leadsSinOferta } from "@/lib/metricas";
-import { LEADS } from "@/lib/data/leads";
 import { porcentaje } from "@/lib/formato";
 import { plural } from "@/lib/texto";
+import { obtenerDatos } from "@/lib/base/datos";
 
 /** Dinero que se pierde por no tener proyecto donde el mercado lo pide. */
-export function DemandaNoAtendida() {
-  const distritos = demandaNoAtendida().slice(0, 3);
-  const totalSinOferta = porcentaje(leadsSinOferta(), LEADS.length);
+export async function DemandaNoAtendida() {
+  const datos = await obtenerDatos();
+  const distritos = demandaNoAtendida(datos).slice(0, 3);
+  const totalSinOferta = porcentaje(leadsSinOferta(datos), datos.leads.length);
 
   return (
     <Tarjeta className="p-6">

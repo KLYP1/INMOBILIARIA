@@ -70,6 +70,8 @@ export function crear(e: Entrada): LeadCrudo {
     creadoEn: desdeHoy(-e.dias, hora, minuto),
     ultimoContacto: haceMinutos(e.contacto),
     resumenIA: e.resumen,
+    // En la semilla nadie ha tomado todavia una conversacion a mano.
+    botPausado: false,
     conversacion: CONVERSACIONES[e.id] ?? [],
   };
 }

@@ -2,10 +2,10 @@
 
 import { CalendarPlus, Check } from "lucide-react";
 import { Boton, Selector, claseCampo } from "@/components/ui/campo";
-import { ASESORES } from "@/lib/data/empresa";
 
 export function AccionesLead({
   asesor,
+  asesores,
   agendada,
   nota,
   onAsignar,
@@ -13,6 +13,7 @@ export function AccionesLead({
   onNota,
 }: {
   asesor: string | null;
+  asesores: { id: string; nombre: string }[];
   agendada: boolean;
   nota: string;
   onAsignar: (id: string | null) => void;
@@ -28,7 +29,7 @@ export function AccionesLead({
           onChange={(e) => onAsignar(e.target.value || null)}
         >
           <option value="">Sin asignar</option>
-          {ASESORES.map((a) => (
+          {asesores.map((a) => (
             <option key={a.id} value={a.id}>
               {a.nombre}
             </option>

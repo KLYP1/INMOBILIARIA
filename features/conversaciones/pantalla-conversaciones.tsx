@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { useDemo } from "@/features/estado/proveedor-demo";
 import { Conversacion } from "@/features/leads/conversacion";
-import { nombreAsesor } from "@/lib/data/empresa";
 import { plural } from "@/lib/texto";
 import { ListaChats, type Filtro } from "./lista-chats";
 import { CabeceraHilo } from "./cabecera-hilo";
@@ -12,6 +11,17 @@ import { ContextoLead } from "./contexto-lead";
 import { Compositor } from "./compositor";
 import type { Canal } from "@/lib/types";
 import type { LeadVista } from "@/lib/vistas";
+
+
+/** El nombre sale de la lista que baja del servidor, no de un modulo estatico:
+ *  con Supabase los identificadores son UUID y esa lista cambia sola. */
+function resolverNombre(
+  asesores: { id: string; nombre: string }[],
+  id: string | null,
+): string {
+  if (!id) return "Sin asignar";
+  return asesores.find((a) => a.id === id)?.nombre ?? "Sin asignar";
+}
 
 export type ChatVista = {
   id: string;
@@ -25,9 +35,11 @@ export type ChatVista = {
 
 export function PantallaConversaciones({
   leads,
+  asesores,
   chatInicial,
 }: {
   leads: LeadVista[];
+  asesores: { id: string; nombre: string }[];
   chatInicial: string | null;
 }) {
   const demo = useDemo();
@@ -45,10 +57,10 @@ export function PantallaConversaciones({
         return {
           ...lead,
           asesorAsignado,
-          asesorNombre: nombreAsesor(asesorAsignado),
+          asesorNombre: resolverNombre(asesores, asesorAsignado),
         };
       }),
-    [leads, demo.asignaciones],
+    [leads, demo.asignaciones, asesores],
   );
 
   const chats: ChatVista[] = useMemo(
@@ -127,9 +139,9 @@ export function PantallaConversaciones({
                 ref={hilo}
                 className="scroll-fino min-h-0 flex-1 overflow-y-auto py-5"
               >
-                <Conversacion mensajes={mensajes} asesor={lead.asesorAsignado} />
+                <Conversacion mensajes={mensajes} asesorNombre={lead.asesorAsignado ? lead.asesorNombre : null} />
               </div>
-              <Compositor leadId={lead.id} asesor={lead.asesorAsignado} />
+              <Compositor leadId={lead.id} asesorNombre={lead.asesorAsignado ? lead.asesorNombre : null} />
             </>
           ) : (
             <p className="m-auto text-[13px] text-suave">

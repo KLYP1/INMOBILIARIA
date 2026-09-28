@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Send, Undo2 } from "lucide-react";
 import { useDemo } from "@/features/estado/proveedor-demo";
-import { nombreAsesor } from "@/lib/data/empresa";
 
 /**
  * Caja de respuesta del asesor. Vive en la bandeja y en la ficha del lead:
@@ -12,10 +11,11 @@ import { nombreAsesor } from "@/lib/data/empresa";
  */
 export function Compositor({
   leadId,
-  asesor,
+  asesorNombre,
 }: {
   leadId: string;
-  asesor: string | null;
+  /** Ya resuelto por quien lo llama: aca no se puede consultar la base. */
+  asesorNombre: string | null;
 }) {
   const { enviarMensaje, reanudarBot, botPausado } = useDemo();
   const [texto, setTexto] = useState("");
@@ -33,8 +33,8 @@ export function Compositor({
       {pausado && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] bg-aviso-fondo px-3.5 py-2.5">
           <span className="text-[12px] text-aviso">
-            {asesor
-              ? `El asistente está en pausa. La conversación la lleva ${nombreAsesor(asesor)}.`
+            {asesorNombre
+              ? `El asistente está en pausa. La conversación la lleva ${asesorNombre}.`
               : "El asistente está en pausa. La conversación la llevas tú."}
           </span>
           <button

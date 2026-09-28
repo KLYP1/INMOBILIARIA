@@ -3,10 +3,12 @@ import { leadsRescatados } from "@/lib/metricas";
 import { TICKET_PROMEDIO } from "@/lib/data/empresa";
 import { solesMillonesPiso } from "@/lib/formato";
 import { plural } from "@/lib/texto";
+import { obtenerDatos } from "@/lib/base/datos";
 
 /** La cara buena de la demanda no atendida: lo que el asistente sí salvó. */
-export function RescateProyectos() {
-  const rescatados = leadsRescatados();
+export async function RescateProyectos() {
+  const datos = await obtenerDatos();
+  const rescatados = leadsRescatados(datos);
   const distritos = [...new Set(rescatados.map((l) => l.zonaSolicitada))];
   const valor = rescatados.length * TICKET_PROMEDIO;
 

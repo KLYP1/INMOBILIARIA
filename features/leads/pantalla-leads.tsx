@@ -7,13 +7,24 @@ import { ListaLeads } from "./lista-leads";
 import { TablaLeads, type Orden } from "./tabla-leads";
 import { PanelLead } from "./panel-lead";
 import { useDemo } from "@/features/estado/proveedor-demo";
-import { nombreAsesor } from "@/lib/data/empresa";
 import { contiene } from "@/lib/texto";
 import type { LeadVista } from "@/lib/vistas";
+
+
+/** El nombre sale de la lista que baja del servidor, no de un modulo estatico:
+ *  con Supabase los identificadores son UUID y esa lista cambia sola. */
+function resolverNombre(
+  asesores: { id: string; nombre: string }[],
+  id: string | null,
+): string {
+  if (!id) return "Sin asignar";
+  return asesores.find((a) => a.id === id)?.nombre ?? "Sin asignar";
+}
 
 type Props = {
   leads: LeadVista[];
   proyectos: { id: string; nombre: string }[];
+  asesores: { id: string; nombre: string }[];
   filtrosIniciales: Filtros;
   leadInicial: string | null;
 };
@@ -21,6 +32,7 @@ type Props = {
 export function PantallaLeads({
   leads,
   proyectos,
+  asesores,
   filtrosIniciales,
   leadInicial,
 }: Props) {
@@ -39,9 +51,13 @@ export function PantallaLeads({
       leads.map((lead) => {
         if (!(lead.id in asignaciones)) return lead;
         const asesorAsignado = asignaciones[lead.id];
-        return { ...lead, asesorAsignado, asesorNombre: nombreAsesor(asesorAsignado) };
+        return {
+          ...lead,
+          asesorAsignado,
+          asesorNombre: resolverNombre(asesores, asesorAsignado),
+        };
       }),
-    [leads, asignaciones],
+    [leads, asignaciones, asesores],
   );
 
   const visibles = useMemo(() => {
@@ -133,7 +149,11 @@ export function PantallaLeads({
         </div>
       </Tarjeta>
 
-      <PanelLead lead={lead} onCerrar={() => setAbierto(null)} />
+      <PanelLead
+        lead={lead}
+        asesores={asesores}
+        onCerrar={() => setAbierto(null)}
+      />
     </div>
   );
 }

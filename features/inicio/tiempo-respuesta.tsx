@@ -3,10 +3,12 @@ import { Tarjeta, TituloTarjeta } from "@/components/ui/tarjeta";
 import { puntosRespuesta, respuestaPromedioSeg } from "@/lib/metricas";
 import { RESPUESTA_ANTES_SEG } from "@/lib/data/empresa";
 import { duracion } from "@/lib/formato";
+import { obtenerDatos } from "@/lib/base/datos";
 
 /** La unica tarjeta negra de la pantalla de inicio. */
-export function TiempoRespuesta() {
-  const puntos = puntosRespuesta();
+export async function TiempoRespuesta() {
+  const datos = await obtenerDatos();
+  const puntos = puntosRespuesta(datos);
 
   return (
     <Tarjeta oscura className="flex flex-col p-5">
@@ -14,7 +16,7 @@ export function TiempoRespuesta() {
 
       <div className="mt-5 flex items-baseline gap-2">
         <p className="text-[36px] leading-none font-normal tabular-nums">
-          {duracion(respuestaPromedioSeg())}
+          {duracion(respuestaPromedioSeg(datos))}
         </p>
         <ArrowUpRight className="size-4 text-ambar" strokeWidth={1.5} />
       </div>

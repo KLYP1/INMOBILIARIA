@@ -3,12 +3,12 @@ import { ArrowRight } from "lucide-react";
 import { Tarjeta, TituloTarjeta } from "@/components/ui/tarjeta";
 import { Pildora } from "@/components/ui/pildora";
 import { visitasDeHoy } from "@/lib/metricas";
-import { nombreProyecto } from "@/lib/data/proyectos";
-import { leadPorId } from "@/lib/data/leads";
 import { AHORA, hora } from "@/lib/fechas";
+import { obtenerDatos } from "@/lib/base/datos";
 
-export function VisitasHoy() {
-  const visitas = visitasDeHoy();
+export async function VisitasHoy() {
+  const datos = await obtenerDatos();
+  const visitas = visitasDeHoy(datos);
   const proxima =
     visitas.find((v) => new Date(v.fechaHora).getTime() >= AHORA) ?? visitas[0];
 
@@ -25,7 +25,7 @@ export function VisitasHoy() {
         <ol className="mt-5 space-y-4">
           {visitas.map((visita) => {
             const esProxima = visita.id === proxima?.id;
-            const lead = leadPorId(visita.leadId);
+            const lead = datos.leads.find((l) => l.id === visita.leadId);
             return (
               <li key={visita.id} className="flex items-start gap-3">
                 <Pildora
@@ -36,7 +36,8 @@ export function VisitasHoy() {
                 </Pildora>
                 <div className="min-w-0">
                   <p className="truncate text-[13px] text-texto">
-                    {nombreProyecto(visita.proyectoId)}
+                    {datos.proyectos.find((p) => p.id === visita.proyectoId)
+                      ?.nombre ?? "Sin proyecto"}
                   </p>
                   <p className="truncate text-[11px] text-tenue">
                     {lead?.nombre ?? "Lead"}

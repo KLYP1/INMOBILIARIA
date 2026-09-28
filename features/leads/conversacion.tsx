@@ -1,4 +1,3 @@
-import { nombreAsesor } from "@/lib/data/empresa";
 import type { Mensaje } from "@/lib/types";
 
 const BURBUJA = {
@@ -10,10 +9,11 @@ const BURBUJA = {
 /** Transcripcion de WhatsApp con las tres voces diferenciadas. */
 export function Conversacion({
   mensajes,
-  asesor,
+  asesorNombre,
 }: {
   mensajes: Mensaje[];
-  asesor: string | null;
+  /** Ya resuelto por quien lo llama: aca no se puede consultar la base. */
+  asesorNombre: string | null;
 }) {
   if (mensajes.length === 0) {
     return (
@@ -36,8 +36,8 @@ export function Conversacion({
               <span className="mb-1 pr-1 text-[11px] text-tenue">
                 {mensaje.propio
                   ? "Entraste a la conversación"
-                  : asesor
-                    ? `${nombreAsesor(asesor)} entró a la conversación`
+                  : asesorNombre
+                    ? `${asesorNombre} entró a la conversación`
                     : "Un asesor entró a la conversación"}
               </span>
             )}

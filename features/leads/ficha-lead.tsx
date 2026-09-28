@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import { Pildora } from "@/components/ui/pildora";
-import { dormitorios, etiqueta, soles, solesMiles, unDecimal } from "@/lib/formato";
+import { dormitorios, etiqueta, soles, solesMiles, telefonoVisible, unDecimal } from "@/lib/formato";
 import type { LeadVista } from "@/lib/vistas";
 
 function Dato({ rotulo, valor }: { rotulo: string; valor: string }) {
@@ -28,7 +28,7 @@ export function FichaLead({ lead }: { lead: LeadVista }) {
       <div>
         <p className="mb-3 text-[11px] text-tenue">Datos capturados</p>
         <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-          <Dato rotulo="Teléfono" valor={lead.telefono} />
+          <Dato rotulo="Teléfono" valor={telefonoVisible(lead.telefono)} />
           <Dato rotulo="Origen" valor={etiqueta(lead.origen)} />
           <Dato rotulo="Canal" valor={etiqueta(lead.canal)} />
           <Dato rotulo="Presupuesto" valor={presupuesto} />

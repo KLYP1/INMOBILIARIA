@@ -6,23 +6,39 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "migrar": "node --env-file=.env.local scripts/migrar.mts",
+    "base": "node --env-file=.env.local scripts/estado-base.mts",
+    "sembrar": "node --env-file=.env.local scripts/sembrar.mts",
+    "sembrar:verificar": "node --env-file=.env.local scripts/verificar-semilla.mts",
+    "base:verificar": "node --env-file=.env.local scripts/verificar-lectura.mts",
+    "whatsapp": "node --env-file=.env.local scripts/whatsapp.mts",
+    "base:escritura": "node --env-file=.env.local scripts/verificar-escritura.mts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.1",
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
     "lucide-react": "^1.46.0",
     "next": "16.3.5",
+    "postgres": "^3.4.9",
+    "qrcode-terminal": "^0.12.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "recharts": "^3.10.1"
+    "recharts": "^3.10.1",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24.13.6",
+    "@types/qrcode-terminal": "^0.12.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.1"
   }
 }

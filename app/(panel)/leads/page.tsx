@@ -1,7 +1,6 @@
 import { PantallaLeads } from "@/features/leads/pantalla-leads";
-import { PROYECTOS } from "@/lib/data/proyectos";
-import { LEADS } from "@/lib/data/leads";
 import { leadsVista } from "@/lib/vistas";
+import { obtenerDatos } from "@/lib/base/datos";
 
 type Params = {
   estado?: string;
@@ -36,14 +35,16 @@ export default async function LeadsPage({
 }: {
   searchParams: Promise<Params>;
 }) {
-  const p = await searchParams;
-  const proyectos = PROYECTOS.map((x) => ({ id: x.id, nombre: x.nombre }));
-  const existeLead = p.lead && LEADS.some((l) => l.id === p.lead);
+  const [p, datos] = await Promise.all([searchParams, obtenerDatos()]);
+  const proyectos = datos.proyectos.map((x) => ({ id: x.id, nombre: x.nombre }));
+  const asesores = datos.asesores.map((a) => ({ id: a.id, nombre: a.nombre }));
+  const existeLead = p.lead && datos.leads.some((l) => l.id === p.lead);
 
   return (
     <PantallaLeads
-      leads={leadsVista()}
+      leads={leadsVista(datos)}
       proyectos={proyectos}
+      asesores={asesores}
       filtrosIniciales={{
         proyecto: valido(p.proyecto, new Set(proyectos.map((x) => x.id))),
         estado: valido(p.estado, ESTADOS),

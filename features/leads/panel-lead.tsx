@@ -12,9 +12,11 @@ import type { LeadVista } from "@/lib/vistas";
 
 export function PanelLead({
   lead,
+  asesores,
   onCerrar,
 }: {
   lead: LeadVista | null;
+  asesores: { id: string; nombre: string }[];
   onCerrar: () => void;
 }) {
   const demo = useDemo();
@@ -43,6 +45,7 @@ export function PanelLead({
       pie={
         <AccionesLead
           asesor={lead.asesorAsignado}
+          asesores={asesores}
           agendada={demo.agendadas[lead.id] ?? false}
           nota={demo.notas[lead.id] ?? ""}
           onAsignar={(id) => demo.asignar(lead.id, id)}
@@ -57,10 +60,10 @@ export function PanelLead({
         <p className="mb-3 text-[11px] text-tenue">Conversación en WhatsApp</p>
         <Conversacion
           mensajes={demo.conversacionDe(lead.id, lead.conversacion)}
-          asesor={lead.asesorAsignado}
+          asesorNombre={lead.asesorAsignado ? lead.asesorNombre : null}
         />
         <div className="mt-4">
-          <Compositor leadId={lead.id} asesor={lead.asesorAsignado} />
+          <Compositor leadId={lead.id} asesorNombre={lead.asesorAsignado ? lead.asesorNombre : null} />
         </div>
       </div>
 

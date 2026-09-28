@@ -1,11 +1,12 @@
 import { Tarjeta } from "@/components/ui/tarjeta";
 import { TarjetaProyecto } from "@/features/proyectos/tarjeta-proyecto";
 import { BotonImportar } from "@/features/proyectos/boton-importar";
-import { PROYECTOS, unidadesDisponibles } from "@/lib/data/proyectos";
-import { LEADS } from "@/lib/data/leads";
+import { unidadesDisponibles } from "@/lib/data/proyectos";
+import { obtenerDatos } from "@/lib/base/datos";
 
-export default function ProyectosPage() {
-  const total = PROYECTOS.reduce((t, p) => t + unidadesDisponibles(p), 0);
+export default async function ProyectosPage() {
+  const datos = await obtenerDatos();
+  const total = datos.proyectos.reduce((t, p) => t + unidadesDisponibles(p), 0);
 
   return (
     <div className="space-y-5">
@@ -31,12 +32,12 @@ export default function ProyectosPage() {
       </div>
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {PROYECTOS.map((proyecto) => (
+        {datos.proyectos.map((proyecto) => (
           <TarjetaProyecto
             key={proyecto.id}
             proyecto={proyecto}
             leads={
-              LEADS.filter((l) => l.proyectoInteres === proyecto.id).length
+              datos.leads.filter((l) => l.proyectoInteres === proyecto.id).length
             }
           />
         ))}

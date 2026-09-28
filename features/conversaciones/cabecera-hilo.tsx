@@ -3,6 +3,7 @@
 import { Bot, ChevronLeft, Undo2 } from "lucide-react";
 import { CanalEtiqueta } from "@/components/ui/canal";
 import { Pildora } from "@/components/ui/pildora";
+import { telefonoVisible } from "@/lib/formato";
 import { EstadoLeadPildora } from "@/components/ui/estado-lead";
 import { useDemo } from "@/features/estado/proveedor-demo";
 import type { LeadVista } from "@/lib/vistas";
@@ -36,7 +37,7 @@ export function CabeceraHilo({
         <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11px] text-tenue">
           <CanalEtiqueta canal={lead.canal} />
           <span aria-hidden>·</span>
-          {lead.telefono}
+          {telefonoVisible(lead.telefono)}
           <span aria-hidden>·</span>
           {lead.proyectoNombre}
         </p>

@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sesion de WhatsApp (Baileys): son credenciales
+.whatsapp-sesion

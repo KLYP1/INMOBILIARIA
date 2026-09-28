@@ -47,6 +47,20 @@ export function duracion(segundos: number): string {
   return minutos ? `${horas} h ${minutos} min` : `${horas} h`;
 }
 
+/**
+ * La base guarda el telefono en una sola forma canonica, solo digitos, porque
+ * es como llega de WhatsApp. El "+" y los espacios son presentacion.
+ *
+ * "51987350550" -> "+51 987 350 550"
+ */
+export function telefonoVisible(digitos: string): string {
+  const d = digitos.replace(/\D/g, "");
+  if (d.length === 11 && d.startsWith("51")) {
+    return `+51 ${d.slice(2, 5)} ${d.slice(5, 8)} ${d.slice(8)}`;
+  }
+  return d ? `+${d}` : "Sin telefono";
+}
+
 export function metraje(m2: number): string {
   return `${m2} m²`;
 }

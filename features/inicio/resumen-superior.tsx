@@ -1,9 +1,11 @@
 import { BarraProgreso } from "@/components/ui/barra-progreso";
 import { Metrica } from "@/components/ui/metrica";
 import { resumenCabecera } from "@/lib/metricas";
+import { obtenerDatos } from "@/lib/base/datos";
 
-export function ResumenSuperior() {
-  const r = resumenCabecera();
+export async function ResumenSuperior() {
+  const datos = await obtenerDatos();
+  const r = resumenCabecera(datos);
 
   return (
     <div className="flex flex-wrap items-end justify-between gap-6 lg:gap-8">

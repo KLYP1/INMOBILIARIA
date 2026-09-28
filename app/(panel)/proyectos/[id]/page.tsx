@@ -5,19 +5,19 @@ import { Tarjeta } from "@/components/ui/tarjeta";
 import { EtapaPildora } from "@/components/ui/etapa";
 import { TablaTipologias } from "@/features/proyectos/tabla-tipologias";
 import { LeadsProyecto } from "@/features/proyectos/leads-proyecto";
-import { proyectoPorId, unidadesDisponibles } from "@/lib/data/proyectos";
-import { leadsDeProyecto } from "@/lib/data/leads";
+import { unidadesDisponibles } from "@/lib/data/proyectos";
+import { obtenerDatos } from "@/lib/base/datos";
 
 export default async function ProyectoPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const proyecto = proyectoPorId(id);
+  const [{ id }, datos] = await Promise.all([params, obtenerDatos()]);
+  const proyecto = datos.proyectos.find((p) => p.id === id);
   if (!proyecto) notFound();
 
-  const leads = leadsDeProyecto(proyecto.id);
+  const leads = datos.leads.filter((l) => l.proyectoInteres === proyecto.id);
 
   return (
     <div className="space-y-5">

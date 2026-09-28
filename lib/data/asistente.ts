@@ -1,3 +1,5 @@
+import { UMBRAL } from "../scoring";
+
 export type Tono = "cercano" | "formal" | "directo";
 
 /**
@@ -65,7 +67,7 @@ export const CONFIG_INICIAL: ConfigAsistente = {
     { id: "trabajo", texto: "Dónde trabaja, para calcular distancias", activa: false },
     { id: "familia", texto: "Cuántas personas se mudarían", activa: false },
   ],
-  umbral: 70,
+  umbral: UMBRAL.calificado,
   palabras: ["abogado", "reclamo", "contrato", "descuento especial", "gerente"],
   reactivacion: [
     {

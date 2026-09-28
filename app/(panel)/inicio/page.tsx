@@ -9,21 +9,23 @@ import { DemandaNoAtendida } from "@/features/inicio/demanda-no-atendida";
 import { RescateProyectos } from "@/features/inicio/rescate-proyectos";
 import { InformeSemanal } from "@/features/informe/informe-semanal";
 import { EMPRESA } from "@/lib/data/empresa";
-import { LEADS } from "@/lib/data/leads";
-import { nombreProyecto } from "@/lib/data/proyectos";
+import { obtenerDatos } from "@/lib/base/datos";
 import { distritosPedidos, informeSemanal, leadsPorSemana } from "@/lib/metricas";
 import { HOY, fechaLarga } from "@/lib/fechas";
 
-export default function Inicio() {
+export default async function Inicio() {
+  const datos = await obtenerDatos();
   const hoy = fechaLarga(new Date(HOY).toISOString());
-  const dona = distritosPedidos();
-  const recientes = LEADS.slice(0, 12).map((l) => ({
+  const dona = distritosPedidos(datos);
+  const recientes = datos.leads.slice(0, 12).map((l) => ({
     id: l.id,
     nombre: l.nombre,
     presupuestoMin: l.presupuestoMin,
     presupuestoMax: l.presupuestoMax,
     estado: l.estado,
-    proyecto: nombreProyecto(l.proyectoInteres),
+    proyecto:
+      datos.proyectos.find((p) => p.id === l.proyectoInteres)?.nombre ??
+      "Sin proyecto",
   }));
 
   return (
@@ -46,7 +48,7 @@ export default function Inicio() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[64fr_36fr]">
-        <GraficoSemanas datos={leadsPorSemana()} />
+        <GraficoSemanas datos={leadsPorSemana(datos)} />
         <DonaDistritos partes={dona.partes} total={dona.total} />
       </div>
 
@@ -55,7 +57,7 @@ export default function Inicio() {
         <RescateProyectos />
       </div>
 
-      <InformeSemanal informe={informeSemanal()} />
+      <InformeSemanal informe={informeSemanal(datos)} />
     </div>
   );
 }

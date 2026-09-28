@@ -65,6 +65,8 @@ export type Lead = {
   creadoEn: string;
   ultimoContacto: string;
   resumenIA: string;
+  /** Un humano tomo la conversacion y el asistente se calla hasta que la suelte. */
+  botPausado: boolean;
   conversacion: Mensaje[];
 };
 

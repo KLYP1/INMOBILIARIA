@@ -1,11 +1,8 @@
-import { LEADS } from "./data/leads";
-import { VISITAS } from "./data/visitas";
-import { PROYECTOS, nombreProyecto } from "./data/proyectos";
-import { nombreAsesor } from "./data/empresa";
 import { semaforo, type Semaforo } from "./scoring";
 import { recomendarPorCercania, sinOfertaEnZona } from "./recomendacion";
 import { relativo, AHORA } from "./fechas";
 import { briefingVisita } from "./briefing";
+import type { Datos } from "./base/datos";
 import type { Lead, Visita } from "./types";
 
 export type AlternativaVista = {
@@ -28,17 +25,31 @@ export type LeadVista = Lead & {
   alternativas: AlternativaVista[];
 };
 
-function aVista(lead: Lead): LeadVista {
-  const sinOferta = sinOfertaEnZona(lead, PROYECTOS);
+/**
+ * Los nombres se resuelven contra la foto de datos, no contra un modulo
+ * estatico: con Supabase los identificadores son UUID y cualquier tabla de
+ * nombres escrita a mano quedaria desfasada en cuanto se agregue un asesor.
+ */
+function nombreDeProyecto(datos: Datos, id: string): string {
+  return datos.proyectos.find((p) => p.id === id)?.nombre ?? "Sin proyecto";
+}
+
+function nombreDeAsesor(datos: Datos, id: string | null): string {
+  if (!id) return "Sin asignar";
+  return datos.asesores.find((a) => a.id === id)?.nombre ?? "Sin asignar";
+}
+
+function aVista(lead: Lead, datos: Datos): LeadVista {
+  const sinOferta = sinOfertaEnZona(lead, datos.proyectos);
   return {
     ...lead,
-    proyectoNombre: nombreProyecto(lead.proyectoInteres),
+    proyectoNombre: nombreDeProyecto(datos, lead.proyectoInteres),
     contactoRelativo: relativo(lead.ultimoContacto),
-    asesorNombre: nombreAsesor(lead.asesorAsignado),
+    asesorNombre: nombreDeAsesor(datos, lead.asesorAsignado),
     nivel: semaforo(lead.score),
     sinOferta,
     alternativas: sinOferta
-      ? recomendarPorCercania(lead, PROYECTOS)
+      ? recomendarPorCercania(lead, datos.proyectos)
           .slice(0, 3)
           .map((a) => ({
             id: a.proyecto.id,
@@ -53,10 +64,9 @@ function aVista(lead: Lead): LeadVista {
 }
 
 /** Los leads con todo lo que la interfaz necesita ya resuelto. */
-export function leadsVista(): LeadVista[] {
-  return LEADS.map(aVista);
+export function leadsVista(datos: Datos): LeadVista[] {
+  return datos.leads.map((lead) => aVista(lead, datos));
 }
-
 
 export type VisitaVista = Visita & {
   leadNombre: string;
@@ -72,28 +82,28 @@ export type VisitaVista = Visita & {
   lead: LeadVista | null;
 };
 
-export function visitasVista(): VisitaVista[] {
-  const proximaId = VISITAS.find(
+export function visitasVista(datos: Datos): VisitaVista[] {
+  const proximaId = datos.visitas.find(
     (v) => new Date(v.fechaHora).getTime() >= AHORA,
   )?.id;
 
-  return VISITAS.map((visita) => {
-    const lead = LEADS.find((l) => l.id === visita.leadId) ?? null;
-    const proyecto = PROYECTOS.find((p) => p.id === visita.proyectoId);
+  return datos.visitas.map((visita) => {
+    const lead = datos.leads.find((l) => l.id === visita.leadId) ?? null;
+    const proyecto = datos.proyectos.find((p) => p.id === visita.proyectoId);
     const pasada = new Date(visita.fechaHora).getTime() < AHORA;
 
     return {
       ...visita,
       leadNombre: lead?.nombre ?? "Lead",
-      proyectoNombre: nombreProyecto(visita.proyectoId),
-      asesorNombre: nombreAsesor(visita.asesor),
+      proyectoNombre: nombreDeProyecto(datos, visita.proyectoId),
+      asesorNombre: nombreDeAsesor(datos, visita.asesor),
       momento: pasada
         ? ("pasada" as const)
         : visita.id === proximaId
           ? ("proxima" as const)
           : ("despues" as const),
       briefing: lead ? briefingVisita(lead, proyecto, visita.fechaHora) : [],
-      lead: lead ? aVista(lead) : null,
+      lead: lead ? aVista(lead, datos) : null,
     };
   });
 }

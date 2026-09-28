@@ -45,9 +45,16 @@ export function calcularScore(lead: LeadCrudo, proyectos: Proyecto[]): number {
   return score;
 }
 
+/**
+ * Los dos cortes del semaforo, en un solo sitio. El umbral de escalamiento del
+ * Asistente los lee de aqui: si el bot escalara a un numero distinto del que
+ * pinta el semaforo, el panel diria una cosa y el bot haria otra.
+ */
+export const UMBRAL = { calificado: 70, enConversacion: 40 } as const;
+
 export function semaforo(score: number): Semaforo {
-  if (score >= 70) return "calificado";
-  if (score >= 40) return "en_conversacion";
+  if (score >= UMBRAL.calificado) return "calificado";
+  if (score >= UMBRAL.enConversacion) return "en_conversacion";
   return "frio";
 }
 
