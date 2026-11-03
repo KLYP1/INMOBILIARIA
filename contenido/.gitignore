@@ -1,0 +1,12 @@
+# Media pesada: se queda fuera del repo (videos crudos, renders, voces, mattes)
+remotion/node_modules/
+remotion/out/
+remotion/public/*.mov
+remotion/public/*.mp4
+remotion/public/*.webm
+remotion/public/*_bg.png
+remotion/public/*_fg.png
+remotion/public/promo_voz.wav
+remotion/public/demo_vo.wav
+remotion/public/r5_*.jpg
+*.prores.mov
