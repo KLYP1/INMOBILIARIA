@@ -115,7 +115,7 @@ const Overlays: React.FC = () => {
 			<Head3 t={t} from={9.6} to={11.53} sup="y el resto me contestó" key_="al día siguiente" keyAt={10.85} />
 			{/* 5–6 · they paid for the lead */}
 			<Head3 t={t} from={11.8} to={14.44} sup="Las 10 pagaron para que yo les escribiera" key_="me dejó ir" keyAt={13.82} letters acc="pero la mayoría…" accAt={13.24} />
-			<Head3 t={t} from={14.6} to={18.05} sup="Si fuera un cliente real, hoy estaría visitando" key_="la que me contestó primero" keyAt={16.78} keySize={118} />
+			<Head3 t={t} from={14.6} to={18.05} sup="Si fuera un cliente real, hoy estaría visitando" key_="la que me contestó primero" keyAt={16.78} keySize={96} />
 			{/* 7–8 · the study */}
 			<Head3 t={t} from={18.18} to={21.65} sup="Y no es intuición:" key_="la primera hora" keyAt={20.4} letters acc="es un estudio" accAt={18.94} />
 			<Figure t={t} from={22.12} to={24.66} value={7} pre="" suf="×" top={1190} sub="más probabilidades de calificar" subAt={22.94} />
