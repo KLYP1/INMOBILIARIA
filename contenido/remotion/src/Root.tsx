@@ -10,6 +10,7 @@ import {Cover4} from "./reel4/Cover";
 import {Cover5} from "./reel5/Cover5";
 import {Promo, PROMO_LEN} from "./promo/Promo";
 import {PostComps} from "./posts/Posts";
+import {Reel6, SPEECH6, OUTRO6} from "./reel6/Reel6";
 import {Reel5, SPEECH5, OUTRO5} from "./reel5/Reel5";
 import {Main, TOTAL} from "./v2/Main";
 import {Demo2, DEMO_LEN} from "./v2/Demo2";
@@ -32,5 +33,6 @@ export const RemotionRoot: React.FC = () => (
 		<Composition id="Gancho" component={Hook} durationInFrames={Math.round(17.3 * 30)} fps={30} width={1920} height={1080} />
 		<Composition id="Promo" component={Promo} durationInFrames={Math.round(PROMO_LEN * 30)} fps={30} width={1080} height={1920} defaultProps={{sfx: true}} />
 			<PostComps />
+			<Composition id="Reel6" component={Reel6} durationInFrames={Math.round((SPEECH6 + OUTRO6) * 30)} fps={30} width={1080} height={1920} />
 		</>
 );
