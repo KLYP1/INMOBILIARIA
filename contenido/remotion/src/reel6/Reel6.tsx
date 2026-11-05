@@ -1,166 +1,182 @@
 import React from "react";
-import {AbsoluteFill, Audio, Easing, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame, useVideoConfig} from "remotion";
-import {CameraMotionBlur} from "@remotion/motion-blur";
-import {GalaSubs} from "../reel5/Gala";
-import {LogoImg} from "../reel/Reel";
-import {LINES6} from "./lines";
-import {Figure, Head3, IcBed, IcBolt, IcCal, IconList, IcWallet, k01, Msg, Veil} from "./Kit6";
-import {cond, thin} from "../reel5/Gala";
+import {AbsoluteFill, Audio, Easing, interpolate, OffthreadVideo, Sequence, staticFile, useVideoConfig} from "remotion";
 import {RED} from "../reel/brand";
+import {LogoImg} from "../reel/Reel";
+import {Broll, ColorCard, cond, CREAM, GalaSubs, INK, MAROON, NUM, on, Pw, thin, useT, Venn} from "../reel5/Gala";
+import {Bubble} from "../promo/Promo";
+import {K} from "../promo/ui";
+import {LINES6} from "./lines";
 
-const FPS = 30;
+// Editorial style of the Gala references (same kit as reel 5 v2). Her footage is shown untouched:
+// full frame, original colour, no zooms or close-ups.
 export const SPEECH6 = 43.46;
 export const OUTRO6 = 1.45;
 
-/* Source edit (seconds of reel6_src.mov, already cut, graded and upscaled 1.5× to 1080×1920). */
-// take per output range: [outStart, outEnd, take]
-const TAKES: [number, number, number][] = [[0, 6.31, 1], [6.31, 11.56, 2], [11.56, 18.08, 3], [18.08, 24.69, 4], [24.69, 36.69, 5], [36.69, 99, 6]];
-// measured in the 720×1280 original: eye x/y and face width per take
-const FACE: Record<number, [number, number, number]> = {1: [382, 569, 224], 2: [366, 602, 233], 3: [350, 610, 205], 4: [369, 624, 178], 5: [356, 605, 204], 6: [365, 590, 219]};
-type Ang = "M" | "C";
-/** crop window (original px) for a take and a virtual angle: M = medium (face 20.5 % of height, eyes at 37 %), C = close (24 %, eyes at 38 %) */
-const crop = (take: number, a: Ang) => {
-	const [x, y, fw] = FACE[take];
-	const r = a === "M" ? 0.205 : 0.24, e = a === "M" ? 0.37 : 0.38;
-	const H = Math.min(fw / r, (1280 - y) / (1 - e)), W = (H * 9) / 16;
-	return {W, H, L: Math.max(0, Math.min(720 - W, x - W / 2)), T: Math.max(0, Math.min(1280 - H, y - e * H))};
-};
-// shots: [outStart, angle]; a new phrase/idea = a new virtual angle
-const SHOTS: [number, Ang][] = [[0, "M"], [3.35, "C"], [6.31, "M"], [9.53, "C"], [11.56, "M"], [14.47, "C"], [18.08, "M"], [21.68, "C"], [24.69, "M"], [33.13, "C"], [36.69, "M"], [38.74, "C"], [40.9, "M"]];
-const CUTS = SHOTS.slice(1).map(([t]) => t);
-const OUTF = 7, INF = 9; // robot-arm frames before / after the cut
+// black & white flashes on punch words
+const BW: [number, number][] = [[13.82, 14.3], [18.44, 18.9], [35.9, 36.5]];
 
-const shotAt = (t: number) => {
-	let i = 0;
-	for (let k = 0; k < SHOTS.length; k++) if (t >= SHOTS[k][0]) i = k;
-	return i;
-};
-const takeAt = (t: number) => (TAKES.find(([a, b]) => t >= a && t < b) ?? TAKES[TAKES.length - 1])[2];
-// movement direction into each shot: towards a close-up the camera rises; towards a medium it slides sideways (alternating)
-const dirInto = (i: number): [number, number] => (SHOTS[i][1] === "C" ? [0, -1] : i % 4 === 0 ? [1, 0] : [-1, 0]);
+// caption words that jump to big condensed caps (w = white, r = red)
+const KEYS: Record<string, string> = {"ir.": "r", "intuición,": "w", "primero.": "w", "descansando.": "w", "presupuesto.": "w", "inmobiliaria?": "r", "proyecto.": "r"};
+// captions step aside whenever a big text, a number or a full-screen card carries the words
+const HIDE: [number, number][] = [[0, 3.35], [3.35, 5.05], [6.55, 7.6], [7.85, 9.53], [10.5, 11.56], [11.8, 12.9], [16.78, 18.08], [20.4, 21.68], [22.2, 24.69], [24.9, 28.0], [31.63, 33.13], [34.29, 35.0], [37.0, 38.74], [38.82, 40.9], [42.4, 99]];
 
-/** Robot-arm move: outgoing shot accelerates (push 100→115 %, short slide, 2.5° tilt), cut at peak speed, incoming decelerates. */
-const arm = (f: number) => {
-	for (let i = 1; i < SHOTS.length; i++) {
-		const c = Math.round(SHOTS[i][0] * FPS);
-		const [dx, dy] = dirInto(i);
-		const rot = i % 2 ? 2.5 : -2.5;
-		if (f >= c - OUTF && f < c) {
-			const p = (f - (c - OUTF) + 1) / OUTF, e = p * p * p; // ease-in
-			return {s: 1 + 0.15 * e, x: dx * 60 * e, y: dy * 60 * e, r: rot * e, blur: true};
-		}
-		if (f >= c && f < c + INF) {
-			const q = (f - c) / INF, e = 1 - Math.pow(1 - q, 3); // ease-out, same direction of travel
-			return {s: 1.12 - 0.12 * e, x: -dx * 60 * (1 - e), y: -dy * 60 * (1 - e), r: -rot * (1 - e), blur: q < 0.5};
-		}
-	}
-	return {s: 1, x: 0, y: 0, r: 0, blur: false};
+const Sfx: React.FC<{at: number; src: string; v?: number}> = ({at, src, v = 0.3}) => {
+	const {fps} = useVideoConfig();
+	return <Sequence from={Math.max(0, Math.round(at * fps))}><Audio src={staticFile(src)} volume={v} /></Sequence>;
 };
 
-/** The footage, reframed per take/angle, with a slow 100→104 % creep inside every shot and the robot-arm move at cuts. */
-const Footage: React.FC = () => {
-	const f = useCurrentFrame();
-	const t = f / FPS;
-	const i = shotAt(t);
-	const start = SHOTS[i][0], end = SHOTS[i + 1]?.[0] ?? SPEECH6 + OUTRO6;
-	const {H, L, T} = crop(takeAt(t), SHOTS[i][1]);
-	const s = 1920 / (H * 1.5);
-	const creep = 1 + 0.04 * interpolate(t, [start, end], [0, 1], {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
-	const m = arm(f);
+/** One big condensed line on the wall above her head (rendered behind her when placed in <Behind>). */
+const Line: React.FC<{t: number; from: number; to: number; top: number; size: number; color: string; words: [string, number][]}> = ({t, from, to, top, size, color, words}) => {
+	if (!on(t, from, to)) return null;
+	const out = interpolate(t, [to - 0.2, to], [1, 0], {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
 	return (
-		<AbsoluteFill style={{transform: `translate(${m.x}px, ${m.y}px) rotate(${m.r}deg) scale(${creep * m.s})`, transformOrigin: "540px 720px"}}>
-			<div style={{position: "absolute", left: 0, top: 0, width: 1080, height: 1920, transformOrigin: "0 0", transform: `scale(${s}) translate(${-L * 1.5}px, ${-T * 1.5}px)`}}>
-				<OffthreadVideo src={staticFile("reel6_src.mov")} muted style={{width: 1080, height: 1920}} />
+		<div style={{position: "absolute", left: 40, right: 40, top, textAlign: "center", opacity: out, filter: out < 1 ? `blur(${(1 - out) * 10}px)` : undefined, ...cond(size, color)}}>
+			{words.map(([w, a], i) => <React.Fragment key={i}>{i > 0 && " "}<Pw t={t} at={a} dur={0.12}>{w}</Pw></React.Fragment>)}
+		</div>
+	);
+};
+
+/** Text that sits BEHIND her (under the matte layer). */
+const Behind: React.FC = () => {
+	const t = useT();
+	return (
+		<AbsoluteFill style={{pointerEvents: "none"}}>
+			{/* hook */}
+			<Line t={t} from={0} to={3.35} top={110} size={140} color={INK} words={[["Ayer", 0], ["le", 1.04], ["escribí", 1.04], ["a", 1.2]]} />
+			<Line t={t} from={1.29} to={3.35} top={240} size={300} color={RED} words={[["10", 1.29], ["inmobiliarias", 1.47]]} />
+			{/* midnight */}
+			<Line t={t} from={6.39} to={7.85} top={200} size={260} color={INK} words={[["A", 6.39], ["medianoche", 6.63]]} />
+			{/* they paid */}
+			<Line t={t} from={11.8} to={13.2} top={110} size={140} color={INK} words={[["Las", 11.8], ["10", 11.91]]} />
+			<Line t={t} from={12.02} to={13.2} top={240} size={300} color={RED} words={[["pagaron", 12.02]]} />
+			{/* first one */}
+			<Line t={t} from={16.78} to={18.08} top={110} size={140} color={INK} words={[["la", 16.78], ["que", 17.24], ["me", 17.3], ["contestó", 17.39]]} />
+			<Line t={t} from={17.62} to={18.08} top={240} size={300} color={RED} words={[["primero", 17.62]]} />
+			{/* solution: what it asked */}
+			<Venn from={27.4} to={31.55} items={[["Al instante", 27.58], ["Dormitorios", 28.86], ["Presupuesto", 30.16]]} cy={280} />
+			<Line t={t} from={31.63} to={33.13} top={110} size={140} color={INK} words={[["Agendó", 31.63], ["la", 31.85], ["visita", 32.03]]} />
+			<Line t={t} from={32.73} to={33.13} top={240} size={300} color={RED} words={[["sábado", 32.73]]} />
+			{/* which group */}
+			<Line t={t} from={37.0} to={38.74} top={110} size={140} color={INK} words={[["¿En", 37.42], ["qué", 37.52]]} />
+			<Line t={t} from={37.6} to={38.74} top={240} size={300} color={RED} words={[["grupo?", 37.6]]} />
+		</AbsoluteFill>
+	);
+};
+
+/** Giant thin red number on the chest (kept under the chin), with her words in thin italics below. */
+const Num: React.FC<{t: number; from: number; to: number; n: string; words: [string, number][]}> = ({t, from, to, n, words}) => {
+	if (!on(t, from, to)) return null;
+	const k = interpolate(t, [from, from + 0.2], [0, 1], {extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic)});
+	const out = interpolate(t, [to - 0.2, to], [1, 0], {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
+	return (
+		<AbsoluteFill style={{pointerEvents: "none", opacity: out}}>
+			<div style={{position: "absolute", left: 0, right: 0, top: 1170, textAlign: "center", fontFamily: NUM, fontWeight: 200, fontSize: 360, lineHeight: 1, color: RED, opacity: k, transform: `scale(${0.95 + 0.05 * k})`, filter: k < 1 ? `blur(${(1 - k) * 12}px)` : undefined}}>{n}</div>
+			<div style={{position: "absolute", left: 60, right: 110, top: 1460, display: "flex", flexWrap: "wrap", justifyContent: "center", columnGap: 14}}>
+				{words.map(([w, a], i) => <Pw key={i} t={t} at={a - 0.03} style={thin(58, "#fff", {fontStyle: "italic", textShadow: "0 2px 16px rgba(0,0,0,0.55)"})}>{w}</Pw>)}
 			</div>
 		</AbsoluteFill>
 	);
 };
-const FootageLayer: React.FC = () => {
-	const f = useCurrentFrame();
-	return arm(f).blur ? (
-		<CameraMotionBlur samples={8} shutterAngle={200}>
-			<Footage />
-		</CameraMotionBlur>
-	) : (
-		<Footage />
-	);
-};
 
-// caption keywords that jump to big condensed caps (w = white, r = red)
-const KEYS: Record<string, string> = {"mismo.": "w", "automáticas": "r", "siguiente.": "w", "ir.": "r", "primero.": "w", "intuición,": "w", "instante.": "r", "descansando.": "w", "inmobiliaria?": "r"};
-// captions step aside while a big text sits on the chest or the veil carries the words
-const HIDE: [number, number][] = [[3.35, 6.31], [22.0, 24.69], [26.04, 33.13]];
-
-const Sfx: React.FC<{at: number; src: string; v?: number}> = ({at, src, v = 0.3}) => (
-	<Sequence from={Math.max(0, Math.round(at * FPS))}><Audio src={staticFile(src)} volume={v} /></Sequence>
-);
-
-const Overlays: React.FC = () => {
-	const t = useCurrentFrame() / FPS;
-	const win = interpolate(t, [42.6, 43.0], [0, 1], {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
-	const rev = interpolate(t, [42.85, 43.35], [0, 1], {extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic)});
+const Front: React.FC = () => {
+	const t = useT();
+	const win = interpolate(t, [42.75, 43.15], [0, 1], {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
+	const rev = interpolate(t, [43.0, 43.5], [0, 1], {extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.cubic)});
 	return (
 		<AbsoluteFill style={{pointerEvents: "none"}}>
-			{/* 1 · hook */}
-			<Head3 t={t} from={0} to={3.3} sup="Ayer por la noche le escribí a" key_="10 inmobiliarias" keyAt={1.29} letters acc="de Lima, preguntando lo mismo" accAt={2.05} />
-			{/* 2 · the two questions, as chat bubbles */}
-			{t >= 3.35 && t < 6.31 && (
-				<div style={{position: "absolute", inset: 0, opacity: 1 - k01(t, 6.0, 0.3)}}>
-					<Msg t={t} at={3.41} text="¿Aún tienes depas de 2 dormitorios?" time="21:40" top={110} />
-					<Msg t={t} at={5.09} text="¿Cuál es la inicial del depa?" time="21:40" top={265} />
+			<Num t={t} from={7.87} to={9.53} n="5" words={[["con", 8.27], ["respuestas", 8.49], ["automáticas", 8.85]]} />
+			<Num t={t} from={22.22} to={24.69} n="7×" words={[["veces", 22.5], ["más", 22.78], ["probabilidades", 22.94], ["de", 23.48], ["calificar", 23.68], ["al", 24.02], ["cliente", 24.2]]} />
+			<Num t={t} from={34.29} to={35.05} n="10" words={[["de", 34.37], ["la", 34.47], ["noche", 34.61]]} />
+
+			{/* the questions she sent */}
+			<Broll from={3.35} to={5.05} src="r5_apto.jpg">
+				<div style={{position: "absolute", left: 70, right: 110, top: 780, textAlign: "center"}}>
+					<div style={thin(66, "#fff", {fontStyle: "italic"})}><Pw t={t} at={3.41}>“¿Aún tienes depas</Pw> <Pw t={t} at={3.97}>de 2 dormitorios?”</Pw></div>
+				</div>
+			</Broll>
+			{/* the rest: next day */}
+			<ColorCard from={10.5} to={11.56} bg={CREAM}>
+				<div style={thin(60, MAROON)}><Pw t={t} at={10.5}>el resto me contestó</Pw></div>
+				<div style={{...cond(250, MAROON), marginTop: 16}}>
+					<Pw t={t} at={10.85} dur={0.22} blur={18}>al día</Pw><br />
+					<Pw t={t} at={11.0} dur={0.22} blur={18} style={{color: RED}}>siguiente</Pw>
+				</div>
+			</ColorCard>
+			{/* the study */}
+			<ColorCard from={20.4} to={21.68} bg={MAROON}>
+				<div style={thin(60, CREAM)}><Pw t={t} at={20.4}>si respondes dentro de</Pw></div>
+				<div style={{...cond(270, CREAM), marginTop: 16}}>
+					<Pw t={t} at={20.9} dur={0.22} blur={18}>la primera</Pw><br />
+					<Pw t={t} at={21.22} dur={0.22} blur={18} style={{color: RED}}>hora</Pw>
+				</div>
+			</ColorCard>
+			{/* «ahora mira» on the wall, then the same message answered by KLYP */}
+			{on(t, 24.9, 26.04) && (
+				<div style={{position: "absolute", left: 40, right: 40, top: 200, textAlign: "center", ...cond(260, INK)}}>
+					<Pw t={t} at={24.9}>Ahora</Pw> <Pw t={t} at={25.16} style={{color: RED}}>mira</Pw>
 				</div>
 			)}
-			{/* 3–4 · who answered */}
-			<Head3 t={t} from={6.36} to={9.5} sup="A medianoche me habían contestado" key_="5 de 10" keyAt={7.87} letters acc="con respuestas automáticas" accAt={8.49} />
-			<Head3 t={t} from={9.6} to={11.53} sup="y el resto me contestó" key_="al día siguiente" keyAt={10.85} />
-			{/* 5–6 · they paid for the lead */}
-			<Head3 t={t} from={11.8} to={14.44} sup="Las 10 pagaron para que yo les escribiera" key_="me dejó ir" keyAt={13.82} letters acc="pero la mayoría…" accAt={13.24} />
-			<Head3 t={t} from={14.6} to={18.05} sup="Si fuera un cliente real, hoy estaría visitando" key_="la que me contestó primero" keyAt={16.78} keySize={96} />
-			{/* 7–8 · the study */}
-			<Head3 t={t} from={18.18} to={21.65} sup="Y no es intuición:" key_="la primera hora" keyAt={20.4} letters acc="es un estudio" accAt={18.94} />
-			<Figure t={t} from={22.12} to={24.66} value={7} pre="" suf="×" top={1190} sub="más probabilidades de calificar" subAt={22.94} />
-			{/* 9–10 · the solution: same message, answered by the assistant */}
-			<Head3 t={t} from={24.9} to={26.3} sup="Ahora mira" key_="el mismo mensaje" keyAt={25.46} letters />
-			<Veil t={t} from={26.04} to={33.3}>
-				<Msg t={t} at={26.5} text="¿Aún tienes depas de 2 dormitorios?" time="22:00" top={250} reply="Respondido por el asistente de KLYP" replyAt={26.95} />
-				<IconList t={t} from={27.4} to={33.2} top={640} items={[[IcBolt, "Respondió al instante", 27.58], [IcBed, "Preguntó por los dormitorios", 28.86], [IcWallet, "Preguntó por el presupuesto", 30.16], [IcCal, "Agendó la visita del sábado", 31.63]]} />
-			</Veil>
-			{/* 11 · 10 PM */}
-			<Head3 t={t} from={33.2} to={36.66} sup="y todo esto lo hizo a las" key_="10 de la noche" keyAt={34.29} letters acc="mientras sus asesores descansan" accAt={35.05} />
-			{/* 12–13 · question + CTA */}
-			<Head3 t={t} from={36.86} to={38.71} sup="¿Quieres saber" key_="en qué grupo cae" keyAt={37.42} letters acc="tu inmobiliaria?" accAt={37.92} />
-			<Head3 t={t} from={38.82} to={41.75} sup="Agenda tu" key_="diagnóstico gratuito" keyAt={39.16} keySize={130} acc="y le hago la misma prueba" accAt={39.98} />
-			{/* 14 · close: brand veil, CTA, logo */}
-			<Veil t={t} from={41.7} to={SPEECH6 + OUTRO6 + 1} strong pillOn={false}>
-				<div style={{position: "absolute", left: 60, right: 110, top: 470, textAlign: "center"}}>
-					<div style={thin(56, "rgba(255,255,255,0.85)")}><span style={{opacity: k01(t, 42.0, 0.3)}}>Agenda tu</span></div>
-					<div style={{...cond(170, RED), marginTop: 8, opacity: k01(t, 42.1, 0.35), transform: `scale(${0.95 + 0.05 * k01(t, 42.1, 0.35)})`}}>diagnóstico gratuito</div>
-					<div style={{...thin(48, "#fff", {fontStyle: "italic"}), marginTop: 14, opacity: k01(t, 42.35, 0.35)}}>con tu propio proyecto</div>
+			<ColorCard from={26.04} to={28.0} bg={K.noche}>
+				<div style={{width: 900, display: "flex", flexDirection: "column", gap: 22, textAlign: "left"}}>
+					<div style={{opacity: interpolate(t, [26.04, 26.3], [0, 1], {extrapolateRight: "clamp"})}}><Bubble who="c" time="22:00">¿Aún tienes depas de 2 dormitorios?</Bubble></div>
+					<div style={{opacity: interpolate(t, [26.75, 27.05], [0, 1], {extrapolateLeft: "clamp", extrapolateRight: "clamp"})}}><Bubble who="a" time="22:00">¡Hola! Sí, tenemos. ¿Para cuántas personas y cuál es tu presupuesto aproximado?</Bubble></div>
 				</div>
-				<div style={{position: "absolute", left: 0, right: 0, top: 1010, display: "flex", justifyContent: "center", opacity: Math.max(win, rev)}}>
-					<LogoImg height={120} reveal={rev} windowOn={win} />
+				<div style={{position: "absolute", left: 0, right: 0, top: 300, textAlign: "center"}}>
+					<div style={thin(52, "rgba(255,255,255,0.8)")}><Pw t={t} at={26.1}>respondido por el asistente de</Pw></div>
+					<div style={{display: "flex", justifyContent: "center", marginTop: 18, opacity: interpolate(t, [27.2, 27.45], [0, 1], {extrapolateLeft: "clamp", extrapolateRight: "clamp"})}}><LogoImg height={70} reveal={1} windowOn={1} /></div>
 				</div>
-			</Veil>
+			</ColorCard>
+			{/* CTA card */}
+			<ColorCard from={38.82} to={40.9} bg={MAROON}>
+				<div style={thin(60, CREAM)}><Pw t={t} at={38.82}>Agenda tu</Pw></div>
+				<div style={{...cond(260, CREAM), marginTop: 16}}>
+					<Pw t={t} at={39.16} dur={0.22} blur={18}>diagnóstico</Pw><br />
+					<Pw t={t} at={39.6} dur={0.22} blur={18} style={{color: RED}}>gratuito</Pw>
+				</div>
+				<div style={{...thin(52, CREAM, {fontStyle: "italic"}), marginTop: 24}}><Pw t={t} at={39.98}>y le hago la misma prueba</Pw></div>
+			</ColorCard>
+			{/* close: logo */}
+			<ColorCard from={42.4} to={99} bg={MAROON}>
+				<div style={thin(56, CREAM)}><Pw t={t} at={42.45}>Agenda tu diagnóstico</Pw></div>
+				<div style={{...cond(220, RED), marginTop: 10}}><Pw t={t} at={42.55} dur={0.22} blur={18}>gratuito</Pw></div>
+				<div style={{marginTop: 90, display: "flex", justifyContent: "center", opacity: Math.max(win, rev)}}><LogoImg height={120} reveal={rev} windowOn={win} /></div>
+			</ColorCard>
 		</AbsoluteFill>
 	);
 };
 
 export const Reel6: React.FC = () => {
-	const {fps} = useVideoConfig();
+	const t = useT();
+	const bw = BW.some(([a, b]) => on(t, a, b));
+	const fx: React.CSSProperties = {filter: bw ? "grayscale(1) contrast(1.12)" : undefined};
 	return (
-		<AbsoluteFill style={{backgroundColor: "#0e0f11"}}>
-			<FootageLayer />
-			<Overlays />
-			<GalaSubs lines={LINES6} keys={KEYS} hide={HIDE} y={1185} />
-
-			<Sfx at={0} src="reel_hit.wav" v={0.32} />
-			{CUTS.map((c, i) => <Sfx key={i} at={c - 6 / fps} src="sfx_whoosh.wav" v={0.16} />)}
-			{[3.41, 5.09].map((a, i) => <Sfx key={`b${i}`} at={a} src="sfx_pop.wav" v={0.14} />)}
-			{[27.58, 28.86, 30.16, 31.63].map((a, i) => <Sfx key={`l${i}`} at={a} src="sfx_click.wav" v={0.16} />)}
-			<Sfx at={22.12} src="sfx_pop.wav" v={0.16} />
-			<Sfx at={34.29} src="sfx_click.wav" v={0.14} />
-			<Sfx at={42.6} src="reel_hit.wav" v={0.3} />
+		<AbsoluteFill style={{backgroundColor: INK}}>
+			<AbsoluteFill style={fx}><OffthreadVideo src={staticFile("reel6_src.mov")} muted /></AbsoluteFill>
+			<Behind />
+			<AbsoluteFill style={fx}><OffthreadVideo src={staticFile("reel6_alpha.webm")} transparent muted /></AbsoluteFill>
+			<GalaSubs lines={LINES6} keys={KEYS} hide={HIDE} y={1250} />
+			<Front />
 			<Audio src={staticFile("reel6_src.mov")} />
+
+			<Sfx at={0} src="reel_hit.wav" v={0.34} />
+			<Sfx at={1.29} src="sfx_whoosh.wav" v={0.16} />
+			<Sfx at={3.3} src="sfx_whoosh.wav" v={0.2} />
+			<Sfx at={7.87} src="sfx_pop.wav" v={0.2} />
+			<Sfx at={10.45} src="sfx_whoosh.wav" v={0.2} />
+			<Sfx at={12.02} src="sfx_pop.wav" v={0.18} />
+			<Sfx at={13.82} src="sfx_click.wav" v={0.2} />
+			<Sfx at={17.62} src="sfx_pop.wav" v={0.18} />
+			<Sfx at={20.35} src="reel_hit.wav" v={0.26} />
+			<Sfx at={22.22} src="sfx_pop.wav" v={0.2} />
+			<Sfx at={26.0} src="sfx_whoosh.wav" v={0.2} />
+			<Sfx at={26.75} src="sfx_pop.wav" v={0.16} />
+			{[27.58, 28.86, 30.16].map((a, i) => <Sfx key={i} at={a} src="sfx_click.wav" v={0.18} />)}
+			<Sfx at={32.73} src="sfx_pop.wav" v={0.18} />
+			<Sfx at={34.29} src="sfx_pop.wav" v={0.2} />
+			<Sfx at={37.6} src="sfx_pop.wav" v={0.18} />
+			<Sfx at={38.78} src="reel_hit.wav" v={0.26} />
+			<Sfx at={42.35} src="sfx_whoosh.wav" v={0.18} />
+			<Sfx at={42.75} src="reel_hit.wav" v={0.3} />
 		</AbsoluteFill>
 	);
 };
