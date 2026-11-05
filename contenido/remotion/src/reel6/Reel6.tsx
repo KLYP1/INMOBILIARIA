@@ -18,7 +18,7 @@ const BW: [number, number][] = [[13.82, 14.3], [18.44, 18.9], [35.9, 36.5]];
 // caption words that jump to big condensed caps (w = white, r = red)
 const KEYS: Record<string, string> = {"ir.": "r", "intuición,": "w", "primero.": "w", "descansando.": "w", "presupuesto.": "w", "inmobiliaria?": "r", "proyecto.": "r"};
 // captions step aside whenever a big text, a number or a full-screen card carries the words
-const HIDE: [number, number][] = [[0, 3.35], [3.35, 5.05], [6.55, 7.6], [7.85, 9.53], [10.5, 11.56], [11.8, 12.9], [16.78, 18.08], [20.4, 21.68], [22.2, 24.69], [24.9, 28.0], [31.63, 33.13], [34.29, 35.0], [37.0, 38.74], [38.82, 40.9], [42.4, 99]];
+const HIDE: [number, number][] = [[0, 3.35], [3.35, 5.05], [6.55, 7.6], [7.85, 9.53], [10.5, 11.56], [11.8, 12.9], [16.78, 18.08], [20.4, 21.68], [22.2, 24.69], [24.9, 28.0], [31.63, 33.13], [34.29, 35.12], [37.0, 38.74], [38.82, 40.9], [42.4, 99]];
 
 const Sfx: React.FC<{at: number; src: string; v?: number}> = ({at, src, v = 0.3}) => {
 	const {fps} = useVideoConfig();
@@ -43,22 +43,23 @@ const Behind: React.FC = () => {
 		<AbsoluteFill style={{pointerEvents: "none"}}>
 			{/* hook */}
 			<Line t={t} from={0} to={3.35} top={110} size={140} color={INK} words={[["Ayer", 0], ["le", 1.04], ["escribí", 1.04], ["a", 1.2]]} />
-			<Line t={t} from={1.29} to={3.35} top={240} size={300} color={RED} words={[["10", 1.29], ["inmobiliarias", 1.47]]} />
+			<Line t={t} from={1.29} to={3.35} top={235} size={240} color={RED} words={[["10", 1.29]]} />
+			<Line t={t} from={1.47} to={3.35} top={430} size={200} color={RED} words={[["inmobiliarias", 1.47]]} />
 			{/* midnight */}
 			<Line t={t} from={6.39} to={7.85} top={200} size={260} color={INK} words={[["A", 6.39], ["medianoche", 6.63]]} />
 			{/* they paid */}
 			<Line t={t} from={11.8} to={13.2} top={110} size={140} color={INK} words={[["Las", 11.8], ["10", 11.91]]} />
-			<Line t={t} from={12.02} to={13.2} top={240} size={300} color={RED} words={[["pagaron", 12.02]]} />
+			<Line t={t} from={12.02} to={13.2} top={300} size={300} color={RED} words={[["pagaron", 12.02]]} />
 			{/* first one */}
 			<Line t={t} from={16.78} to={18.08} top={110} size={140} color={INK} words={[["la", 16.78], ["que", 17.24], ["me", 17.3], ["contestó", 17.39]]} />
-			<Line t={t} from={17.62} to={18.08} top={240} size={300} color={RED} words={[["primero", 17.62]]} />
+			<Line t={t} from={17.62} to={18.08} top={300} size={300} color={RED} words={[["primero", 17.62]]} />
 			{/* solution: what it asked */}
 			<Venn from={27.4} to={31.55} items={[["Al instante", 27.58], ["Dormitorios", 28.86], ["Presupuesto", 30.16]]} cy={280} />
 			<Line t={t} from={31.63} to={33.13} top={110} size={140} color={INK} words={[["Agendó", 31.63], ["la", 31.85], ["visita", 32.03]]} />
-			<Line t={t} from={32.73} to={33.13} top={240} size={300} color={RED} words={[["sábado", 32.73]]} />
+			<Line t={t} from={32.73} to={33.13} top={300} size={300} color={RED} words={[["sábado", 32.73]]} />
 			{/* which group */}
 			<Line t={t} from={37.0} to={38.74} top={110} size={140} color={INK} words={[["¿En", 37.42], ["qué", 37.52]]} />
-			<Line t={t} from={37.6} to={38.74} top={240} size={300} color={RED} words={[["grupo?", 37.6]]} />
+			<Line t={t} from={37.6} to={38.74} top={300} size={300} color={RED} words={[["grupo?", 37.6]]} />
 		</AbsoluteFill>
 	);
 };
@@ -90,8 +91,9 @@ const Front: React.FC = () => {
 
 			{/* the questions she sent */}
 			<Broll from={3.35} to={5.05} src="r5_apto.jpg">
-				<div style={{position: "absolute", left: 70, right: 110, top: 780, textAlign: "center"}}>
-					<div style={thin(66, "#fff", {fontStyle: "italic"})}><Pw t={t} at={3.41}>“¿Aún tienes depas</Pw> <Pw t={t} at={3.97}>de 2 dormitorios?”</Pw></div>
+				<AbsoluteFill style={{background: "rgba(0,0,0,0.42)"}} />
+				<div style={{position: "absolute", left: 70, right: 110, top: 760, textAlign: "center"}}>
+					<div style={thin(84, "#fff", {fontStyle: "italic", fontWeight: 400, textShadow: "0 3px 18px rgba(0,0,0,0.6)"})}><Pw t={t} at={3.41}>“¿Aún tienes depas</Pw> <Pw t={t} at={3.97}>de 2 dormitorios?”</Pw></div>
 				</div>
 			</Broll>
 			{/* the rest: next day */}
